@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>projectMask_frm</title>
+    <link rel="stylesheet" href="./../../../css/aui.css">
+    <link rel="stylesheet" href="./../../../css/font-awesome/css/font-awesome.min.css">
+    <style>
+        body {
+            background-color: transparent;
+        }
+        
+        #enter-prj-btn {
+            position: absolute;
+            right: 3rem;
+            top: -7.5vw;
+            padding: 0;
+            width: 15vw;
+            height: 15vw;
+            background-color: #fff;
+            border-radius: 200px;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.19), 0 1px 1px rgba(0, 0, 0, 0.23);
+            font-size: .8rem;
+            text-align: center;
+            z-index: 1000;
+            display: inline;
+        }
+        
+        .hide {
+            opacity: 0;
+        }
+        
+        .info-list {
+            text-align: left;
+            display: block;
+        }
+        
+        .info {
+            display: inline-block;
+            margin-right: 15px;
+            font-size: 0.7rem;
+            text-align: left;
+            color: #eee;
+        }
+        
+        .header [class*=aui-col-xs-]:active {
+            background-color: #3E8AFD !important;
+        }
+        
+        .prj-name {
+            font-size: 1rem;
+            color: #fff;
+            padding: 10px 0;
+            white-space: nowrap;
+            text-align: left;
+            width: 90vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 3rem;
+        }
+        
+        #wrapper {
+            background-color: #f1f1f1;
+            margin-top: 40vh;
+            position: relative;
+            overflow: visible;
+        }
+        
+        .grey {
+            color: #999;
+        }
+        
+        .back-wrapper {
+            position: fixed;
+            top: 0;
+            z-index: 9999;
+            left: 0;
+            right: 0;
+            display: block;
+            /*padding: 5px 0;*/
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .back {
+            color: #fff !important;
+            background-color: transparent !important;
+            font-weight: 800;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="back-wrapper">
+        <a class="aui-btn back" style="" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+    </div>
+    <div id="app" class="aui-content">
+        <div id="wrapper" class="aui-content">
+            <div id="enter-prj-btn">
+                <i class="aui-iconfont aui-icon-home" style="color:#3E8AFD;height:15vw;line-height:15vw;font-size:1.2rem;font-weight:600;"></i>
+            </div>
+
+            <div class="header aui-grid" style="background-color:#3E8AFD !important;color:#fff;">
+                <div class="aui-row aui-row-padded">
+                    <div class="aui-col-xs-12">
+                        <div class="prj-name aui-margin-l-15">{{prj.name}}</div>
+                        <div class="aui-margin-l-15 info-list">
+                            <div class="info">{{prj.prjLevel}}项目</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="aui-margin-b-15 aui-padded-l-15 aui-padded-b-15" style="background-color:#fff;">
+                <h3 class="aui-padded-t-15 aui-padded-b-5">项目信息</h3>
+                <div class="aui-row aui-row-padded" style="font-size:.7rem;">
+                    <div class="aui-col-xs-3 grey ">项目状态</div>
+                    <div class="aui-col-xs-9">{{prj.prjState}}</div>
+                    <div class="aui-col-xs-3 grey">隧道类型</div>
+                    <div class="aui-col-xs-9">{{prj.tunnelType}}</div>
+                    <div class="aui-col-xs-3 grey">监测单位</div>
+                    <div class="aui-col-xs-9">{{prj.constructionCorp}}</div>
+                    <div class="aui-col-xs-3 grey">起始时间</div>
+                    <div class="aui-col-xs-9">{{prj.startTime||'暂无数据'}}</div>
+                </div>
+            </div>
+
+            <div class="aui-margin-b-15 aui-margin-t-15 aui-padded-l-15 aui-padded-r-15 aui-padded-b-15" style="background-color:#fff;">
+                <h3 class="aui-padded-t-15 aui-padded-b-5">项目概况</h3>
+                <div class="aui-row aui-row-padded" style="font-size:.7rem;font-weight:300;">
+                    <div class="aui-col-xs-12">{{prj.prjSummary||'暂无概况'}}</div>
+                </div>
+            </div>
+
+        </div>
+        <br>
+    </div>
+
+
+    <script type="text/javascript" src="./../../../script/api.js"></script>
+    <script type="text/javascript" src="./../../../script/vue.js"></script>
+    <script>
+        function closeWin() {
+            api.closeToWin({
+                name: 'root'
+            });
+            api.sendEvent({
+                name: 'backToMap'
+            });
+        }
+        
+        apiready = function() {
+            var prj = $api.getStorage('curProject');
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    prj: prj
+                },
+                methods: {
+                    projectClick: function(prj) {
+                        $api.setStorage('curProject', prj);
+                        api.sendEvent({
+                            name: 'selectProject',
+                            extra: prj.prjId
+                        });
+                        api.closeWin({
+                            name: 'projectSearch_win'
+                        });
+                        api.closeWin({});
+                    }
+                },
+                mounted: function() {
+                    // api.parseTapmode();
+                    // document.querySelector('#app').classList.remove('hide');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

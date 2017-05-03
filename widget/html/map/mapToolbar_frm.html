@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>地图城市选择器</title>
+    <link rel="stylesheet" href="../../css/aui.css">
+    <style>
+        html,
+        body {
+            background-color: transparent;
+            position: absolute;
+        }
+        
+        body {
+            /*overflow-y: scroll;*/
+        }
+        
+        .tap-active {
+            background-color: #f0f0f0 !important;
+        }
+        
+        .tool {
+            margin-left: 10px;
+            margin-top: 10px;
+            display: inline-block;
+            padding: 5px 10px;
+            width: 40px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.19), 0 1px 1px rgba(0, 0, 0, 0.23);
+            background-color: #fff;
+        }
+        
+        .btn-group {
+            margin-left: 10px;
+            margin-top: 10px;
+            display: inline-block;
+            width: 40px;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.19), 0 1px 1px rgba(0, 0, 0, 0.23);
+            background-color: #fff;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .aui-iconfont {
+            font-size: 20px !important;
+        }
+        
+        .btn {
+            display: block;
+            text-align: center;
+            padding: 6px 10px;
+            border-bottom: 1px solid #fafafa;
+        }
+        
+        .btn:first-child {
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        
+        .btn:last-child {
+            border-bottom: none !important;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .btn.active {
+            color: #fff;
+            background-color: #3E8AFD;
+            border-bottom: 1px solid #3E8AFD;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="btn-group">
+        <div class="btn active" tapmode="tap-active" onclick="filterProjectLevel(0)">特</div>
+        <div class="btn" tapmode="tap-active" onclick="filterProjectLevel(1)">一</div>
+        <div class="btn" tapmode="tap-active" onclick="filterProjectLevel(2)">二</div>
+        <div class="btn" tapmode="tap-active" onclick="filterProjectLevel(3)">三</div>
+    </div>
+    <div id="city-selector" class="tool" tapmode="tap-active" onclick="chooseCity()">
+        <i class="aui-iconfont aui-icon-location"></i>
+    </div>
+
+
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script>
+        var preDefinedLevelList = ['特级', '一级', '二级', '三级']
+
+        apiready = function() {
+            api.setWinAttr({
+                vScrollBarEnabled: false
+            });
+            api.parseTapmode();
+            initProjectLevel();
+        };
+
+        function initProjectLevel() {
+            var level = $api.getStorage('curProjectLevel');
+            var preDefinedLevelList = ['特级', '一级', '二级', '三级'];
+            var index = preDefinedLevelList.indexOf(level);
+            setActiveProjectLevel(index);
+        }
+
+        function setActiveProjectLevel(index) {
+            var btnList = document.querySelectorAll('.btn-group>.btn');
+            Array.from(btnList)
+                .forEach(function(el, i) {
+                    el.classList.remove('active');
+                    if (i === index) {
+                        el.classList.add('active');
+                    }
+                });
+        }
+
+        //选择了等级
+        function filterProjectLevel(index) {
+            setActiveProjectLevel(index);
+            $api.setStorage('curProjectLevel', preDefinedLevelList[index]);
+            api.sendEvent({
+                name: 'changeProjectLevel',
+                extra: preDefinedLevelList[index]
+            });
+        }
+
+        //选择了城市
+        function chooseCity() {
+            var cityNameList = $api.getStorage('cityNameList');
+            api.actionSheet({
+                title: '切换城市',
+                buttons: cityNameList,
+                cancelTitle: '取消'
+            }, function(ret, err) {
+                var index = ret.buttonIndex - 1;
+                if (index > cityNameList.length - 1) return;
+                api.sendEvent({
+                    name: 'changeCity',
+                    extra: cityNameList[index]
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>

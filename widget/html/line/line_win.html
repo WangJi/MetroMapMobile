@@ -1,0 +1,66 @@
+<!--线路中的项目展示-->
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>line_win</title>
+    <link rel="stylesheet" href="./../../css/aui.css">
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav">
+        <a class="aui-pull-left aui-btn" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">{{line.name}}</div>
+        <a class="aui-pull-right aui-btn" tapmode onclick="displayLine()">
+            <span class="aui-iconfont aui-icon-map"></span>
+        </a>
+    </header>
+    <script type="text/javascript" src="./../../script/api.js"></script>
+    <script>
+        function closeWin() {
+            api.closeWin({});
+        }
+
+        function displayLine() {
+            api.sendEvent({
+                name: 'displayLine',
+                extra: api.pageParam.lineName
+            });
+            api.closeWin({
+                name: 'projectSearch_win'
+            });
+            api.closeWin({
+                name: 'line_win'
+            });
+
+        }
+
+        apiready = function() {
+            var header = document.querySelector('header');
+            $api.fixStatusBar(header);
+            var headerPos = $api.offset(header);
+            var lineName = api.pageParam.lineName;
+            document.querySelector('#title').innerHTML = lineName;
+            api.openFrame({
+                name: 'line_frm',
+                url: './line_frm.html',
+                bounces: true,
+                rect: {
+                    x: 0,
+                    y: headerPos.h
+                }
+            });
+        };
+    </script>
+</body>
+
+
+</html>

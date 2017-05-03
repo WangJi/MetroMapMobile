@@ -1,0 +1,26 @@
+<!--map的消息显示,可以循环利用-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>mapToast_frm</title>
+</head>
+
+<body>
+
+    <script type="text/javascript" src="../../script/api.js"></script>
+    <script>
+        apiready = function() {
+            api.toast({
+                msg: api.pageParam.msg,
+                duration: 3000,
+                location: 'middle',
+            });
+        };
+    </script>
+</body>
+
+</html>

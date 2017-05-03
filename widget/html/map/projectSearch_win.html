@@ -1,0 +1,105 @@
+<!--项目查找-->
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>projectSearch_win</title>
+    <link rel="stylesheet" href="./../../css/aui.css">
+    <link rel="stylesheet" type="text/css" href="./../../css/aui-slide.css" />
+    <style>
+        .aui-bar-nav .aui-title {
+            left: 2em;
+            right: 0;
+        }
+        
+        #search {
+            background-color: transparent;
+        }
+        
+        .aui-searchbar-input {
+            margin-top: -2px;
+            height: 1.6rem;
+        }
+        
+        .aui-searchbar-input input {
+            height: 1.6rem;
+            line-height: 1.6rem;
+        }
+        
+        .aui-searchbar-input .aui-iconfont {
+            height: 1.6rem;
+            line-height: 1.6rem;
+        }
+        
+        .aui-col-xs-4 {
+            padding: .5rem 0 !important;
+        }
+        
+        .line-pane {
+            height: 180px;
+        }
+        
+        #aui-slide {
+            background-color: #fff;
+        }
+        
+        .hide {
+            opacity: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="aui-content" id="app">
+        <header class="aui-bar aui-bar-nav" id="aui-header">
+            <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+                <span class="aui-iconfont aui-icon-left"></span>
+            </a>
+            <div class="aui-title">
+                <div class="aui-searchbar" id="search">
+                    <div class="aui-searchbar-input aui-border-radius">
+                        <i class="aui-iconfont aui-icon-search"></i>
+                        <input type="search" placeholder="输入项目名称,不想实现了.." v-model="searchTxt" v-on:keyup.enter="search" id="search-input">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="aui-slide">
+            <div class="aui-slide-wrap">
+                <div class="aui-slide-node" v-for="lines in linesGroup">
+                    <div class="aui-grid">
+                        <div class="aui-row">
+                            <div class="aui-col-xs-4" v-for="line in lines" v-on:click="selectLine(line)">
+                                <svg t="1493508795042" class="icon" style="width: 3em; height: 3em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2404"><path d="M239.023 702.31c60.507 86.125 160.624 142.678 273.466 142.678 153.883 0 284.167-105.175 322.518-247.428l-74.165-0.251L647.58 475.108l-123.966 146.23L418.354 466.1 295.485 602.452 74.94 601.438a446.442 446.442 0 0 1-9.266-90.592c0-245.999 200.736-446.726 446.815-446.726 204.194 0 377.288 138.376 430.128 326.209H823.873c-48.458-124.718-169.89-213.54-311.384-213.54-178.24 0-324.707 140.904-333.638 316.95l107.7-0.089 128.015-158.592L524.62 480.755l117.82-146.72L767.246 491.3l91.607-0.255v0.166h99.943c0.259 6.571 0.425 13.059 0.425 19.636 0 246.074-200.656 446.815-446.73 446.815-177.563 0-331.705-104.59-403.586-255.35h130.118z"  v-bind:fill="line.color" p-id="2405"></path></svg>
+                                <div class="aui-grid-label">{{line.name}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="aui-slide-page-wrap">
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="./../../script/api.js"></script>
+    <script type="text/javascript" src="./../../script/aui-slide.js"></script>
+    <script type="text/javascript" src="./../../script/vue.js"></script>
+    <script>
+        function closeWin() {
+            api.closeWin({});
+        }
+
+        apiready = function() {
+            $api.fixStatusBar(document.querySelector('header'));
+            $api.loadScript('./../../lib/projectSearch.js'); //script的相对路径
+        };
+    </script>
+</body>
+
+
+</html>

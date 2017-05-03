@@ -1,0 +1,45 @@
+{
+    "parserOptions": {
+        "sourceType": "module"
+    },
+    "extends": "eslint:recommended",
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true,
+        "node": true
+    },
+    "rules": {
+        "no-console": 0,
+        "indent": 0,
+        "quotes": 0,
+        "no-trailing-spaces": 0,
+        "no-mixed-spaces-and-tabs": 2,
+        "space-before-function-paren": 0,
+        "semi": 0,
+        "spaced-comment": 0,
+        "eol-last": 0,
+        "padded-blocks": 0,
+        "block-spacing": 0,
+        "no-multiple-empty-lines": 0,
+        "no-unused-vars": 1,
+        "no-debugger": 1
+    },
+    "globals": {
+        "Qiniu": false,
+        "angular": false,
+        "os": false,
+        "$": true,
+        "auiSlide": true,
+        "jQuery": true,
+        "L": true,
+        "Vue": true,
+        "toastr": true,
+        "moment": true,
+        "define": true,
+        "AmCharts": true,
+        "io": true,
+        "api": true,
+        "$api": true
+    }
+}

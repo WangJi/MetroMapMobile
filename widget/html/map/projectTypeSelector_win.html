@@ -1,0 +1,84 @@
+<!--选择项目的类型-->
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>projectTypeSelector</title>
+    <link rel="stylesheet" href="./../../css/aui.css">
+    <style>
+        .aui-list-item.active {
+            color: #3E8AFD;
+        }
+        
+        .aui-list-item.active .aui-iconfont {
+            color: #3E8AFD !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="aui-content" id="app">
+        <header class="aui-bar aui-bar-nav" id="aui-header">
+            <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+                <span class="aui-iconfont aui-icon-left"></span>
+            </a>
+            <div class="aui-title">当前类型:&nbsp;{{curType.typeName}}</div>
+        </header>
+        <nav class="aui-content">
+            <ul class="aui-list">
+                <li class="aui-list-header">你拥有的所有权限项目类型</li>
+                <li class="aui-list-item" tapmode="" v-bind:class="{ active: type.typeCode===curType.typeCode }" v-for="type in projectTypeList" v-on:click="typeClick(type)">
+                    <div class="aui-list-item-label-icon">
+                        <i class="aui-iconfont aui-icon-star"></i>
+                    </div>
+                    <div class="aui-list-item-inner">
+                        {{type.typeName}}
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+</body>
+<script type="text/javascript" src="./../../script/api.js"></script>
+<script type="text/javascript" src="./../../script/vue.js"></script>
+<script>
+    function closeWin() {
+        api.closeWin({});
+    }
+
+    apiready = function() {
+        $api.fixStatusBar(document.querySelector('header'));
+        var projectTypeList = $api.getStorage('projectTypeList');
+        var curCode = $api.getStorage('curProjectType');
+        var curType = projectTypeList.find(function(item) {
+            return item.typeCode === curCode;
+        });
+        var app = new Vue({
+            el: '#app',
+            data: {
+                projectTypeList: projectTypeList,
+                curType: curType
+            },
+            methods: {
+                typeClick: function(type) {
+                    api.sendEvent({
+                        name: 'changeProjectType',
+                        extra: type.typeCode
+                    });
+                    api.closeWin({});
+                }
+            },
+            mounted: function() {
+                api.parseTapmode();
+            }
+        });
+
+    };
+</script>
+
+</html>

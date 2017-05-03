@@ -1,0 +1,104 @@
+<!--地图上的项目选择后的遮罩-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>projectMask_win</title>
+    <link rel="stylesheet" href="./../../../css/aui.css">
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <header class="aui-content" style="background-color:#555;">
+    </header>
+
+    <!--<header class="aui-bar aui-bar-nav aui-bar-light" >
+        <a class="aui-pull-left aui-btn" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">{{line.name}}</div>
+        <a class="aui-pull-right aui-btn aui-btn-outline" tapmode>
+            <span class="aui-iconfont aui-icon-forward"></span>
+        </a>
+    </header>-->
+    <script type="text/javascript" src="./../../../script/api.js"></script>
+    <script>
+        function closeWin() {
+            api.closeToWin({
+                name: 'root'
+            });
+            api.sendEvent({
+                name: 'backToMap'
+            });
+        }
+        var aMap = null;
+
+        function showProjectOnMap(prj, y) {
+            aMap = api.require('aMap');
+            aMap.showUserLocation({
+                isShow: false
+            });
+            var center = {
+                id: prj.prjId,
+                lon: prj.center.lng,
+                lat: prj.center.lat,
+            };
+            aMap.open({
+                rect: {
+                    x: 0,
+                    y: y,
+                    // w: api.winWidth,
+                    h: api.winHeight / 2
+                },
+                zoomLevel: 16,
+                center: center,
+                fixed: false
+            }, function() {
+                aMap.setLogo({
+                    position: 'right'
+                });
+                aMap.addAnnotations({
+                    annotations: [center],
+                    draggable: false,
+                    icons: ['widget://image/marker.png']
+                });
+            });
+
+
+        }
+
+        apiready = function() {
+            api.parseTapmode();
+            var header = document.querySelector('header');
+            $api.fixStatusBar(header);
+            var headerPos = $api.offset(header);
+            var prj = $api.getStorage('curProject');
+            // document.querySelector('#title').innerHTML = prj.lineName;
+            showProjectOnMap(prj, headerPos.h);
+            api.openFrame({
+                name: 'projectMask_frm',
+                url: './projectMask_frm.html',
+                bounces: false,
+                rect: {
+                    x: 0,
+                    y: headerPos.h
+                }
+            });
+            api.addEventListener({
+                name: 'keyback'
+            }, function(ret, err) {
+                closeWin();
+                setTimeout(function() {
+                    aMap.close();
+                }, 500);
+            });
+        }
+    </script>
+</body>
+
+</html>

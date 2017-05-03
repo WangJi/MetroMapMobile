@@ -1,0 +1,100 @@
+<!--根据若干条件筛选项目,尚未使用-->
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>projectFilter</title>
+    <link rel="stylesheet" href="../../css/aui.css">
+    <style>
+        .text-grey {
+            color: #999 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="aui-content" id="app">
+        <header class="aui-bar aui-bar-nav" id="aui-header">
+            <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+                <span class="aui-iconfont aui-icon-left"></span>
+            </a>
+            <div class="aui-title">筛选项目(demo,未实现)</div>
+        </header>
+        <nav class="aui-content">
+            <ul class="aui-list aui-form-list">
+                <li class="aui-list-header">带有输入框</li>
+                <li class="aui-list-item">
+                    <div class="aui-list-item-inner">
+                        <div class="aui-list-item-label text-grey">
+                            项目等级
+                        </div>
+                        <div class="aui-list-item-input">
+                            <select>
+                                <option value="">所有等级</option>
+                                <option value="">特级</option>
+                                <option value="">一级</option>
+                                <option value="">二级</option>
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                <li class="aui-list-item">
+                    <div class="aui-list-item-inner">
+                        <div class="aui-list-item-label text-grey">
+                            监测单位
+                        </div>
+                        <div class="aui-list-item-input">
+                            <select>
+                                <option value="">所有监测单位</option>
+                                <option value="">建科院</option>
+                                <option value="">上勘院</option>
+                                <option value="">地调院</option>
+                            </select>
+                        </div>
+                    </div>
+                </li>
+                <li class="aui-list-item">
+                    <div class="aui-list-item-inner aui-list-item-btn">
+                        <div class="aui-btn aui-btn-info aui-margin-r-5" v-on:click="close()">确认筛选</div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+</body>
+<script type=" text/javascript " src="../../script/api.js "></script>
+<script type="text/javascript " src="../../script/vue.js "></script>
+<script>
+    function closeWin() {
+        api.closeWin({});
+    }
+
+    apiready = function() {
+        api.setStatusBarStyle({
+            style: 'dark'
+        });
+        $api.fixStatusBar(document.querySelector('header'));
+        var app = new Vue({
+            el: '#app',
+            data: {
+
+            },
+            methods: {
+                close: function() {
+                    closeWin()
+                },
+                applyFilter: function() {
+
+                }
+            }
+        });
+
+    };
+</script>
+
+</html>
