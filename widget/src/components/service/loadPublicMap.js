@@ -166,25 +166,22 @@ var service = {
         _this._loadWidgets();
 
     },
-    loadSingleProject: function(prj) { //加载单个项目
-        service.map.hide();
-        // service.clearAnnotations();
-        // service._halfScreen();
-        // let center = {
-        //     id: prj.prjId,
-        //     lon: prj.center.lng,
-        //     lat: prj.center.lat,
-        // };
-        // service.map.setCenter({
-        //     coords: center,
-        //     animation: true
-        // });
-        // let annotations = [center];
-        // service.map.addAnnotations({
-        //     annotations: annotations,
-        //     draggable: false,
-        //     icons: ['widget://image/marker.png']
-        // });
+    zoomToProject: function(prj) { //加载单个项目
+
+        let center = {
+            id: prj.prjId,
+            lon: prj.center.lng,
+            lat: prj.center.lat,
+        };
+        service.map.setCenter({
+            coords: center,
+            animation: true
+        });
+        return new Promise(function(resolve) {
+            setTimeout(function() {
+                resolve();
+            }, 500);
+        })
     },
     _toast: function(msg) { //太多的marker,只显示20个
         api.openFrame({

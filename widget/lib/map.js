@@ -8309,20 +8309,24 @@
 	api.addEventListener({
 	    name: 'selectProject'
 	}, function () {
-	    api.openWin({
-	        name: 'projectMask_win',
-	        url: 'widget://html/map/projectMask/projectMask_win.html',
-	        animation: {
-	            type: 'none',
-	            subType: "from_bottom",
-	            duration: 300
-	        },
-	        bgColor: 'rgba(0,0,0,0)'
-	    });
+	    var prj = _Project2.default.findProjectById();
+	    _loadPublicMap2.default.zoomToProject(prj).then(function () {
+	        api.openWin({
+	            name: 'projectMask_win',
+	            url: 'widget://html/map/projectMask/projectMask_win.html',
+	            animation: {
+	                type: 'none',
+	                subType: "from_bottom",
+	                duration: 300
+	            },
+	            bgColor: 'rgba(0,0,0,0)'
+	        });
 
-	    setTimeout(function () {
-	        _loadPublicMap2.default.hide();
-	    }, 500);
+	        setTimeout(function () {
+
+	            _loadPublicMap2.default.hide();
+	        }, 500);
+	    });
 	});
 
 	api.addEventListener({
@@ -8556,26 +8560,23 @@
 	        });
 	        _this._loadWidgets();
 	    },
-	    loadSingleProject: function loadSingleProject(prj) {
+	    zoomToProject: function zoomToProject(prj) {
 	        //加载单个项目
-	        service.map.hide();
-	        // service.clearAnnotations();
-	        // service._halfScreen();
-	        // let center = {
-	        //     id: prj.prjId,
-	        //     lon: prj.center.lng,
-	        //     lat: prj.center.lat,
-	        // };
-	        // service.map.setCenter({
-	        //     coords: center,
-	        //     animation: true
-	        // });
-	        // let annotations = [center];
-	        // service.map.addAnnotations({
-	        //     annotations: annotations,
-	        //     draggable: false,
-	        //     icons: ['widget://image/marker.png']
-	        // });
+
+	        var center = {
+	            id: prj.prjId,
+	            lon: prj.center.lng,
+	            lat: prj.center.lat
+	        };
+	        service.map.setCenter({
+	            coords: center,
+	            animation: true
+	        });
+	        return new Promise(function (resolve) {
+	            setTimeout(function () {
+	                resolve();
+	            }, 500);
+	        });
 	    },
 	    _toast: function _toast(msg) {
 	        //太多的marker,只显示20个

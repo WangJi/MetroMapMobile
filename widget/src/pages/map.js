@@ -67,21 +67,26 @@ api.addEventListener({
 api.addEventListener({
     name: 'selectProject'
 }, function() {
-    api.openWin({
-        name: 'projectMask_win',
-        url: 'widget://html/map/projectMask/projectMask_win.html',
-        animation: {
-            type: 'none',
-            subType: "from_bottom",
-            duration: 300
-        },
-        bgColor: 'rgba(0,0,0,0)',
-        // delay: 200
-    });
+    let prj = Project.findProjectById();
+    loadPublicMap.zoomToProject(prj)
+        .then(function() {
+            api.openWin({
+                name: 'projectMask_win',
+                url: 'widget://html/map/projectMask/projectMask_win.html',
+                animation: {
+                    type: 'none',
+                    subType: "from_bottom",
+                    duration: 300
+                },
+                bgColor: 'rgba(0,0,0,0)',
+                // delay: 200
+            });
 
+            setTimeout(function() {
 
-    setTimeout(function() { loadPublicMap.hide(); }, 500);
-
+                loadPublicMap.hide();
+            }, 500);
+        })
 });
 
 api.addEventListener({

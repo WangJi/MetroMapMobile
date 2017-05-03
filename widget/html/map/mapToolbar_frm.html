@@ -109,13 +109,14 @@
 
         function setActiveProjectLevel(index) {
             var btnList = document.querySelectorAll('.btn-group>.btn');
-            Array.from(btnList)
-                .forEach(function(el, i) {
-                    el.classList.remove('active');
-                    if (i === index) {
-                        el.classList.add('active');
-                    }
-                });
+            for (var i = 0; i < btnList.length; i++) {
+                var el = btnList[i];
+                el.classList.remove('active');
+                if (i === index) {
+                    el.classList.add('active');
+                }
+            }
+
         }
 
         //选择了等级

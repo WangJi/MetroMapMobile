@@ -5,6 +5,10 @@
  * =========================================================================
  */
  /*初始化类*/
+[v-cloak] {
+  opacity: 0;
+}
+
 @charset "UTF-8";
 html{
 	font-family: "Helvetica Neue", Helvetica, sans-serif;
