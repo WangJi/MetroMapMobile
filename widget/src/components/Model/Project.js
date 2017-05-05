@@ -3,14 +3,15 @@
 //事件对象有:
 //changeLine:选择了线路  line:object<Line>
 //changeProjectLevel:改变了当前要显示的项目等级 projectLevel:string
-//changeCity:改变了当前城市  cityName:string
+//locationToolClicked:点击了那个location icon
+//projectTypeAndCityChanged {typeCode,cityName}一起选
 //changeProjectType:改变了当前的项目类型  typeCode:string
 //displayLine 
 //selectProject prjId:int
 
 //缓存对象有:
 //projectTypeList----Array<{typeName,typeCode}>:所有的权限下的typeList
-//curProjectType----{typeName,typeCode}:当前的项目类型
+//curProjectType----typeCode:当前的项目类型
 //curCity--- <string>当前的城市名字,没有的话取当前的城市的第一个
 //cityNameList:当前类型下的城市名称
 //{typeCode}:对应这个typeCode的所有城市List
@@ -52,9 +53,9 @@ class Project {
     }
 
     /** 获取项目 */
-    static getProjectsByType(typeCode) {
+    static getProjectsByType(typeCode, ignoreStorage) {
         typeCode = typeCode || $api.getStorage('curProjectType') || $api.getStorage('projectTypeList')[0].typeCode;
-        $api.setStorage('curProjectType', typeCode);
+        !ignoreStorage && $api.setStorage('curProjectType', typeCode);
 
         return new Promise(function(resolve) {
             let cachedCityList = $api.getStorage(typeCode);
@@ -91,6 +92,15 @@ class Project {
                 resolve(typeList);
             });
         });
+    }
+
+    /** 初始化所有的缓存，因为加载类型/城市项目选择器的时候需要用到 */
+    static initAllProjectsCache() {
+        let typeList = $api.getStorage('projectTypeList');
+        let promiseList = typeList.map(function(type) {
+            return Project.getProjectsByType(type.typeCode, true);
+        });
+        return Promise.all(promiseList);
     }
 
     /** 当前线路 */

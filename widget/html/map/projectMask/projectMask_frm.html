@@ -28,7 +28,6 @@
             z-index: 1000;
             display: inline;
         }
-
         
         .info-list {
             text-align: left;
@@ -68,7 +67,7 @@
         }
         
         .grey {
-            color: #999;
+            color: #aaa;
         }
         
         .back-wrapper {
@@ -79,7 +78,7 @@
             right: 0;
             display: block;
             /*padding: 5px 0;*/
-            background-color: rgba(0, 0, 0, 0.02);
+            background-color: rgba(0, 0, 0, 0.4);
         }
         
         .back {
@@ -107,6 +106,7 @@
                     <div class="aui-col-xs-12">
                         <div class="prj-name aui-margin-l-15">{{prj.name}}</div>
                         <div class="aui-margin-l-15 info-list">
+                            <div class="info">{{prj.lineName}}</div>
                             <div class="info">{{prj.prjLevel}}项目</div>
                         </div>
                     </div>
@@ -117,13 +117,27 @@
                 <h3 class="aui-padded-t-15 aui-padded-b-5">项目信息</h3>
                 <div class="aui-row aui-row-padded" style="font-size:.7rem;">
                     <div class="aui-col-xs-3 grey ">项目状态</div>
-                    <div class="aui-col-xs-9">{{prj.prjState}}</div>
+                    <div class="aui-col-xs-3">{{prj.prjState}}</div>
                     <div class="aui-col-xs-3 grey">隧道类型</div>
-                    <div class="aui-col-xs-9">{{prj.tunnelType}}</div>
+                    <div class="aui-col-xs-3">{{prj.tunnelType}}</div>
                     <div class="aui-col-xs-3 grey">监测单位</div>
-                    <div class="aui-col-xs-9">{{prj.constructionCorp}}</div>
-                    <div class="aui-col-xs-3 grey">起始时间</div>
-                    <div class="aui-col-xs-9">{{prj.startTime||'暂无数据'}}</div>
+                    <div class="aui-col-xs-3">{{prj.constructionCorp}}</div>
+                    <div class="aui-col-xs-3 grey">作业部门</div>
+                    <div class="aui-col-xs-3">{{prj.department}}</div>
+                </div>
+            </div>
+
+            <div class="aui-margin-b-15 aui-padded-l-15 aui-padded-b-15" style="background-color:#fff;">
+                <h3 class="aui-padded-t-15 aui-padded-b-5">起讫时间</h3>
+                <div class="aui-row aui-row-padded" style="font-size:.7rem;">
+                    <div class="aui-col-xs-3 grey ">合同开始</div>
+                    <div class="aui-col-xs-3">{{prj.contractStartTime||'暂无'}}</div>
+                    <div class="aui-col-xs-3 grey">合同结束</div>
+                    <div class="aui-col-xs-3">{{prj.contractEndTime||'暂无'}}</div>
+                    <div class="aui-col-xs-3 grey">时间开始</div>
+                    <div class="aui-col-xs-3">{{prj.startTime||'暂无'}}</div>
+                    <div class="aui-col-xs-3 grey">时间结束</div>
+                    <div class="aui-col-xs-3">{{prj.endTime||'暂无'}}</div>
                 </div>
             </div>
 
@@ -150,7 +164,7 @@
                 name: 'backToMap'
             });
         }
-        
+
         apiready = function() {
             var prj = $api.getStorage('curProject');
             var app = new Vue({

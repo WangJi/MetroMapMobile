@@ -42,17 +42,16 @@
                 methods: {
                     projectClick: function(prj) {
                         $api.setStorage('curProject', prj);
-                        api.sendEvent({
-                            name: 'selectProject',
-                            extra: prj.prjId
-                        });
                         api.closeWin({
                             name: 'projectSearch_win'
                         });
                         api.closeWin({
                             name: 'line_win'
                         });
-
+                        api.sendEvent({
+                            name: 'selectProject',
+                            extra: prj.prjId
+                        });
                     }
                 },
                 mounted: function() {

@@ -131,18 +131,8 @@
 
         //选择了城市
         function chooseCity() {
-            var cityNameList = $api.getStorage('cityNameList');
-            api.actionSheet({
-                title: '切换城市',
-                buttons: cityNameList,
-                cancelTitle: '取消'
-            }, function(ret, err) {
-                var index = ret.buttonIndex - 1;
-                if (index > cityNameList.length - 1) return;
-                api.sendEvent({
-                    name: 'changeCity',
-                    extra: cityNameList[index]
-                });
+            api.sendEvent({
+                name: 'locationToolClicked',
             });
         }
     </script>

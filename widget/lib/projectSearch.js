@@ -45,7 +45,7 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	module.exports = __webpack_require__(304);
+	module.exports = __webpack_require__(305);
 
 
 /***/ }),
@@ -8253,12 +8253,13 @@
 /* 301 */,
 /* 302 */,
 /* 303 */,
-/* 304 */
+/* 304 */,
+/* 305 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function($api, api) {'use strict';
 
-	var _predefinedLineColor = __webpack_require__(305);
+	var _predefinedLineColor = __webpack_require__(306);
 
 	var _predefinedLineColor2 = _interopRequireDefault(_predefinedLineColor);
 
@@ -8336,7 +8337,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(299), __webpack_require__(300)))
 
 /***/ }),
-/* 305 */
+/* 306 */
 /***/ (function(module, exports) {
 
 	'use strict';

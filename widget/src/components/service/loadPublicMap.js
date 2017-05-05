@@ -102,15 +102,7 @@ var service = {
             draggable: false,
             icons: ['widget://image/marker.png']
         }, function(ret) {
-            if (ret.eventType == 'click') {
-                //发生点击事件 ret.id 项目的prjid
-                let prj = Project.findProjectById(ret.id);
-                $api.setStorage('curProject', prj);
-                api.sendEvent({
-                    name: 'selectProject',
-                    extra: prj.prjId
-                });
-            }
+            service._publishProjectClick(ret);
         });
         service._toast(`已加载所有${line.name}项目`);
     },
@@ -153,35 +145,64 @@ var service = {
             draggable: false,
             icons: ['widget://image/marker.png']
         }, function(ret) {
-            if (ret.eventType == 'click') {
-                //发生点击事件 ret.id 项目的prjid
-                let prj = Project.findProjectById(ret.id);
-                $api.setStorage('curProject', prj);
-                api.sendEvent({
-                    name: 'selectProject',
-                    extra: prj.prjId
-                });
-            }
+            service._publishProjectClick(ret);
         });
         _this._loadWidgets();
 
     },
+    _publishProjectClick: function(ret) {
+        if (ret.eventType == 'click') {
+            //发生点击事件 ret.id 项目的prjid
+            let prj = Project.findProjectById(ret.id);
+            $api.setStorage('curProject', prj);
+            api.sendEvent({
+                name: 'selectProject',
+                extra: prj.prjId
+            });
+        }
+    },
     zoomToProject: function(prj) { //加载单个项目
-
-        let center = {
-            id: prj.prjId,
-            lon: prj.center.lng,
-            lat: prj.center.lat,
-        };
-        service.map.setCenter({
-            coords: center,
-            animation: true
+        return new Promise(resolve => {
+            service.map.interconvertCoords({ x: 0, y: 0 }, function(ret) {
+                let screenStartGeoCoor = ret;
+                service.map.interconvertCoords({
+                    x: 0,
+                    y: api.winHeight / 2 + $api.paddingTop()
+                }, (ret1) => {
+                    let screenBottomGeoCoor = ret1;
+                    let center = {
+                        id: prj.prjId,
+                        lon: prj.center.lng,
+                        lat: prj.center.lat + (screenBottomGeoCoor.lat - screenStartGeoCoor.lat),
+                    };
+                    service.map.setCenter({
+                        coords: center,
+                        animation: true
+                    });
+                    let exist = service._annotations.find(a => {
+                        return a.id === prj.prjId;
+                    });
+                    if (!exist) {
+                        let an = {
+                            id: prj.prjId,
+                            lon: prj.center.lng,
+                            lat: prj.center.lat
+                        };
+                        service._annotations.unshift(an);
+                        service.map.addAnnotations({
+                            annotations: [an],
+                            draggable: false,
+                            icons: ['widget://image/marker.png']
+                        }, function(ret) {
+                            service._publishProjectClick(ret);
+                        });
+                    }
+                    setTimeout(function() {
+                        resolve();
+                    }, 500);
+                });
+            });
         });
-        return new Promise(function(resolve) {
-            setTimeout(function() {
-                resolve();
-            }, 500);
-        })
     },
     _toast: function(msg) { //太多的marker,只显示20个
         api.openFrame({

@@ -8242,23 +8242,33 @@
 
 	/* WEBPACK VAR INJECTION */(function($api, api) {'use strict';
 
-	var _loadPublicMap = __webpack_require__(301);
+	var _projectTypeSelector = __webpack_require__(301);
+
+	var _projectTypeSelector2 = _interopRequireDefault(_projectTypeSelector);
+
+	var _loadPublicMap = __webpack_require__(303);
 
 	var _loadPublicMap2 = _interopRequireDefault(_loadPublicMap);
 
-	var _Project = __webpack_require__(303);
+	var _Project = __webpack_require__(302);
 
 	var _Project2 = _interopRequireDefault(_Project);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	var tempTypeCode = '';
 	_Project2.default.getProjectTypes().then(function () {
 	    return changeProjectType();
+	}).then(function () {
+	    tempTypeCode = $api.getStorage('curProjectType'); //保存一下类型
+	    return _Project2.default.initAllProjectsCache();
+	}).then(function () {
+	    $api.setStorage('curProjectType', tempTypeCode); //还原回去
 	});
 
 	/** 改变了项目的类型之后 */
 	function changeProjectType(typeCode) {
-	    _Project2.default.getProjectsByType(typeCode).then(function () {
+	    return _Project2.default.getProjectsByType(typeCode).then(function () {
 	        return _Project2.default.getProjectsInCity($api.getStorage('cityNameList')[0]); //获取第一个城市的线路和项目
 	    }).then(function (city) {
 	        return _loadPublicMap2.default.init(city.name) //初始化地图
@@ -8267,6 +8277,24 @@
 	        });
 	    });
 	}
+
+	function changeProjectTypeAndCity(typeCode, cityName) {
+	    return _Project2.default.getProjectsByType(typeCode).then(function () {
+	        return _Project2.default.getProjectsInCity(cityName);
+	    }).then(function (city) {
+	        return _loadPublicMap2.default.init(city.name) //初始化地图
+	        .then(function () {
+	            _loadPublicMap2.default.loadProjects(city);
+	        });
+	    });
+	}
+
+	api.addEventListener({
+	    name: 'projectTypeAndCityChanged'
+	}, function (ret, err) {
+	    var data = ret.value;
+	    changeProjectTypeAndCity(data.typeCode, data.cityName);
+	});
 
 	//当用户请求项目类型更改
 	api.addEventListener({
@@ -8280,12 +8308,9 @@
 
 	//用户请求城市改变
 	api.addEventListener({
-	    name: 'changeCity'
+	    name: 'locationToolClicked'
 	}, function (ret, err) {
-	    var city = ret.value;
-	    _Project2.default.getProjectsInCity(city).then(function (city) {
-	        _loadPublicMap2.default.loadProjects(city);
-	    });
+	    _projectTypeSelector2.default.openSelector();
 	});
 
 	//用户请求项目等级改变
@@ -8358,11 +8383,316 @@
 	    value: true
 	});
 
-	var _predefinedCityList = __webpack_require__(302);
+	var _Project = __webpack_require__(302);
+
+	var _Project2 = _interopRequireDefault(_Project);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var service = {
+	    selector: null,
+	    _data: null,
+	    _activeTypeIndex: 0,
+	    _activeCityIndex: 0,
+	    _prepareData: function _prepareData() {
+	        var typeList = $api.getStorage('projectTypeList');
+	        var curTypeCode = $api.getStorage('curProjectType');
+	        var cityName = $api.getStorage('curCity');
+	        service._data = typeList.map(function (type, i) {
+	            var cache = $api.getStorage(type.typeCode);
+	            if (type.typeCode === curTypeCode) {
+	                service._activeTypeIndex = i;
+	            }
+	            return {
+	                name: type.typeName,
+	                id: type.typeCode,
+	                sub: cache.map(function (city, j) {
+	                    if (city.name === cityName) {
+	                        service._activeCityIndex = j;
+	                    }
+	                    return {
+	                        name: city.name
+	                    };
+	                })
+	            };
+	        });
+	        return service._data;
+	    },
+	    openSelector: function openSelector() {
+	        return new Promise(function (resolve) {
+	            var UIActionSelector = service.selector = api.require('UIActionSelector');
+	            var data = service._prepareData();
+	            UIActionSelector.open({
+	                datas: data,
+	                layout: {
+	                    row: 3,
+	                    col: 2,
+	                    height: 40,
+	                    size: 12,
+	                    sizeActive: 14,
+	                    rowSpacing: 3,
+	                    colSpacing: 10,
+	                    maskBg: 'rgba(0,0,0,0.3)',
+	                    bg: '#fff',
+	                    color: '#888',
+	                    colorActive: '#3E8AFD',
+	                    colorSelected: '#3E8AFD'
+	                },
+	                animation: true,
+	                cancel: {
+	                    text: '取消',
+	                    size: 12,
+	                    w: 90,
+	                    h: 35,
+	                    bg: '#fff',
+	                    bgActive: '#ccc',
+	                    color: '#888',
+	                    colorActive: '#fff'
+	                },
+	                ok: {
+	                    text: '确定',
+	                    size: 12,
+	                    w: 90,
+	                    h: 35,
+	                    bg: '#3E8AFD',
+	                    bgActive: '#3E8AFD',
+	                    color: '#fff',
+	                    colorActive: '#fff'
+	                },
+	                actives: [service._activeTypeIndex, service._activeCityIndex],
+	                title: {
+	                    text: '选择类型与城市',
+	                    size: 12,
+	                    h: 44,
+	                    bg: '#fafafa',
+	                    color: '#888'
+	                }
+	            }, function (ret, err) {
+	                if (ret.eventType === 'ok') {
+	                    api.sendEvent({
+	                        name: 'projectTypeAndCityChanged',
+	                        extra: {
+	                            typeCode: ret.selectedInfo[0].id,
+	                            cityName: ret.selectedInfo[1].name
+	                        }
+	                    });
+	                }
+	            });
+	            resolve();
+	        });
+	    }
+	};
+
+	exports.default = service;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(299), __webpack_require__(300)))
+
+/***/ }),
+/* 302 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function($api) {'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	//主题色 #3E8AFD
+
+	//事件对象有:
+	//changeLine:选择了线路  line:object<Line>
+	//changeProjectLevel:改变了当前要显示的项目等级 projectLevel:string
+	//locationToolClicked:点击了那个location icon
+	//projectTypeAndCityChanged {typeCode,cityName}一起选
+	//changeProjectType:改变了当前的项目类型  typeCode:string
+	//displayLine 
+	//selectProject prjId:int
+
+	//缓存对象有:
+	//projectTypeList----Array<{typeName,typeCode}>:所有的权限下的typeList
+	//curProjectType----typeCode:当前的项目类型
+	//curCity--- <string>当前的城市名字,没有的话取当前的城市的第一个
+	//cityNameList:当前类型下的城市名称
+	//{typeCode}:对应这个typeCode的所有城市List
+	//curProjectLevel:当前的项目等级,图标太多,分成按等级渲染,默认为特级
+	//maxMarkerCount:地图上最多显示的点
+	//curLine:用户选择的当前的线路
+	//curProject:当前的项目
+
+
+	var Project = function () {
+	    function Project() {
+	        _classCallCheck(this, Project);
+	    }
+
+	    _createClass(Project, null, [{
+	        key: 'getProjectsInCity',
+
+
+	        /** 从缓存中拉取城市项目,并且按照项目等级筛选 */
+	        value: function getProjectsInCity(cityName) {
+	            cityName = cityName || $api.getStorage('curCity') || $api.getStorage('cityNameList')[0];
+	            $api.setStorage('curCity', cityName);
+	            var curProjectLevel = $api.getStorage('curProjectLevel') || '特级';
+
+	            $api.setStorage('curProjectLevel', curProjectLevel);
+	            return new Promise(function (resolve) {
+	                var targetCity = Project.cacheCity;
+	                targetCity.lines.forEach(function (line) {
+	                    line.projects = line.projects.filter(function (project) {
+	                        return project.prjLevel === curProjectLevel;
+	                    });
+	                });
+	                resolve(targetCity);
+	            });
+	        }
+
+	        /** 获取项目 */
+
+	    }, {
+	        key: 'getProjectsByType',
+	        value: function getProjectsByType(typeCode, ignoreStorage) {
+	            typeCode = typeCode || $api.getStorage('curProjectType') || $api.getStorage('projectTypeList')[0].typeCode;
+	            !ignoreStorage && $api.setStorage('curProjectType', typeCode);
+
+	            return new Promise(function (resolve) {
+	                var cachedCityList = $api.getStorage(typeCode);
+	                // let cachedCityList = Project.cache[typeCode];
+	                if (!cachedCityList) {
+	                    //不在缓存中
+	                    var url = 'https://yuntu.ce-safe.com/api/projects?type=' + typeCode;
+	                    $api.get(url, function (cityList) {
+	                        var cityNameList = cityList.map(function (item) {
+	                            return item.name;
+	                        });
+	                        $api.setStorage('cityNameList', cityNameList); //储存当前的城市列表
+	                        $api.setStorage(typeCode, cityList);
+	                        // Project.cache[typeCode] = cityList;
+	                        Project.curCityList = cityList;
+	                        resolve(cityList);
+	                    });
+	                } else {
+	                    var cityNameList = cachedCityList.map(function (item) {
+	                        return item.name;
+	                    });
+	                    $api.setStorage('cityNameList', cityNameList); //储存当前的城市列表
+	                    resolve(cachedCityList);
+	                }
+	            });
+	        }
+
+	        /** 获取项目的类型 */
+
+	    }, {
+	        key: 'getProjectTypes',
+	        value: function getProjectTypes() {
+	            var url = 'https://yuntu.ce-safe.com/metro/project/authorizedProjectTypes';
+	            return new Promise(function (resolve) {
+	                $api.get(url, function (typeList) {
+	                    $api.setStorage('projectTypeList', typeList);
+	                    resolve(typeList);
+	                });
+	            });
+	        }
+
+	        /** 初始化所有的缓存，因为加载类型/城市项目选择器的时候需要用到 */
+
+	    }, {
+	        key: 'initAllProjectsCache',
+	        value: function initAllProjectsCache() {
+	            var typeList = $api.getStorage('projectTypeList');
+	            var promiseList = typeList.map(function (type) {
+	                return Project.getProjectsByType(type.typeCode, true);
+	            });
+	            return Promise.all(promiseList);
+	        }
+
+	        /** 当前线路 */
+
+	    }, {
+	        key: 'getCurLine',
+	        value: function getCurLine() {
+	            return $api.getStorage('curLine');
+	        }
+
+	        /** 查找线路 */
+
+	    }, {
+	        key: 'getLine',
+	        value: function getLine(lineName) {
+	            return new Promise(function (resolve) {
+	                if (!lineName) {
+	                    resolve(Project.getCurLine());
+	                } else {
+	                    Project.getProjectsInCity().then(function (targetCity) {
+	                        var targetLine = targetCity.lines.find(function (line) {
+	                            return line.name === lineName;
+	                        });
+	                        resolve(targetLine);
+	                    });
+	                }
+	            });
+	        }
+
+	        /** 根据项目的id寻找项目 */
+
+	    }, {
+	        key: 'findProjectById',
+	        value: function findProjectById(prjId) {
+	            if (!prjId) return $api.getStorage('curProject'); //如果不提供prjId就找当前的project
+	            var targetCity = Project.cacheCity;
+	            var temp = null;
+	            targetCity.lines.some(function (line) {
+	                return line.projects.some(function (prj) {
+	                    if (prj.prjId === prjId) {
+	                        temp = prj;
+	                        return true;
+	                    }
+	                    return false;
+	                });
+	            });
+	            return temp;
+	        }
+	    }, {
+	        key: 'cacheCity',
+
+
+	        /** 当前缓存的城市 */
+	        get: function get() {
+	            var cityName = $api.getStorage('curCity') || $api.getStorage('cityNameList')[0];
+	            var typeCode = $api.getStorage('curProjectType');
+	            var cachedCityList = $api.getStorage(typeCode);
+	            var targetCity = cachedCityList.find(function (item) {
+	                return item.name === cityName;
+	            });
+	            return targetCity;
+	        }
+	    }]);
+
+	    return Project;
+	}();
+
+	exports.default = Project;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(299)))
+
+/***/ }),
+/* 303 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function($api, api) {'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _predefinedCityList = __webpack_require__(304);
 
 	var _predefinedCityList2 = _interopRequireDefault(_predefinedCityList);
 
-	var _Project = __webpack_require__(303);
+	var _Project = __webpack_require__(302);
 
 	var _Project2 = _interopRequireDefault(_Project);
 
@@ -8496,15 +8826,7 @@
 	            draggable: false,
 	            icons: ['widget://image/marker.png']
 	        }, function (ret) {
-	            if (ret.eventType == 'click') {
-	                //发生点击事件 ret.id 项目的prjid
-	                var prj = _Project2.default.findProjectById(ret.id);
-	                $api.setStorage('curProject', prj);
-	                api.sendEvent({
-	                    name: 'selectProject',
-	                    extra: prj.prjId
-	                });
-	            }
+	            service._publishProjectClick(ret);
 	        });
 	        service._toast('\u5DF2\u52A0\u8F7D\u6240\u6709' + line.name + '\u9879\u76EE');
 	    },
@@ -8548,34 +8870,63 @@
 	            draggable: false,
 	            icons: ['widget://image/marker.png']
 	        }, function (ret) {
-	            if (ret.eventType == 'click') {
-	                //发生点击事件 ret.id 项目的prjid
-	                var prj = _Project2.default.findProjectById(ret.id);
-	                $api.setStorage('curProject', prj);
-	                api.sendEvent({
-	                    name: 'selectProject',
-	                    extra: prj.prjId
-	                });
-	            }
+	            service._publishProjectClick(ret);
 	        });
 	        _this._loadWidgets();
 	    },
+	    _publishProjectClick: function _publishProjectClick(ret) {
+	        if (ret.eventType == 'click') {
+	            //发生点击事件 ret.id 项目的prjid
+	            var prj = _Project2.default.findProjectById(ret.id);
+	            $api.setStorage('curProject', prj);
+	            api.sendEvent({
+	                name: 'selectProject',
+	                extra: prj.prjId
+	            });
+	        }
+	    },
 	    zoomToProject: function zoomToProject(prj) {
 	        //加载单个项目
-
-	        var center = {
-	            id: prj.prjId,
-	            lon: prj.center.lng,
-	            lat: prj.center.lat
-	        };
-	        service.map.setCenter({
-	            coords: center,
-	            animation: true
-	        });
 	        return new Promise(function (resolve) {
-	            setTimeout(function () {
-	                resolve();
-	            }, 500);
+	            service.map.interconvertCoords({ x: 0, y: 0 }, function (ret) {
+	                var screenStartGeoCoor = ret;
+	                service.map.interconvertCoords({
+	                    x: 0,
+	                    y: api.winHeight / 2 + $api.paddingTop()
+	                }, function (ret1) {
+	                    var screenBottomGeoCoor = ret1;
+	                    var center = {
+	                        id: prj.prjId,
+	                        lon: prj.center.lng,
+	                        lat: prj.center.lat + (screenBottomGeoCoor.lat - screenStartGeoCoor.lat)
+	                    };
+	                    service.map.setCenter({
+	                        coords: center,
+	                        animation: true
+	                    });
+	                    var exist = service._annotations.find(function (a) {
+	                        return a.id === prj.prjId;
+	                    });
+	                    if (!exist) {
+	                        var an = {
+	                            id: prj.prjId,
+	                            lon: prj.center.lng,
+	                            lat: prj.center.lat
+	                        };
+	                        service._annotations.unshift(an);
+	                        service.map.addAnnotations({
+	                            annotations: [an],
+	                            draggable: false,
+	                            icons: ['widget://image/marker.png']
+	                        }, function (ret) {
+	                            service._publishProjectClick(ret);
+	                        });
+	                    }
+	                    setTimeout(function () {
+	                        resolve();
+	                    }, 500);
+	                });
+	            });
 	        });
 	    },
 	    _toast: function _toast(msg) {
@@ -8665,7 +9016,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(299), __webpack_require__(300)))
 
 /***/ }),
-/* 302 */
+/* 304 */
 /***/ (function(module, exports) {
 
 	"use strict";
@@ -8727,185 +9078,6 @@
 	}];
 
 	exports.default = cityList;
-
-/***/ }),
-/* 303 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function($api) {'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	//主题色 #3E8AFD
-
-	//事件对象有:
-	//changeLine:选择了线路  line:object<Line>
-	//changeProjectLevel:改变了当前要显示的项目等级 projectLevel:string
-	//changeCity:改变了当前城市  cityName:string
-	//changeProjectType:改变了当前的项目类型  typeCode:string
-	//displayLine 
-	//selectProject prjId:int
-
-	//缓存对象有:
-	//projectTypeList----Array<{typeName,typeCode}>:所有的权限下的typeList
-	//curProjectType----{typeName,typeCode}:当前的项目类型
-	//curCity--- <string>当前的城市名字,没有的话取当前的城市的第一个
-	//cityNameList:当前类型下的城市名称
-	//{typeCode}:对应这个typeCode的所有城市List
-	//curProjectLevel:当前的项目等级,图标太多,分成按等级渲染,默认为特级
-	//maxMarkerCount:地图上最多显示的点
-	//curLine:用户选择的当前的线路
-	//curProject:当前的项目
-
-
-	var Project = function () {
-	    function Project() {
-	        _classCallCheck(this, Project);
-	    }
-
-	    _createClass(Project, null, [{
-	        key: 'getProjectsInCity',
-
-
-	        /** 从缓存中拉取城市项目,并且按照项目等级筛选 */
-	        value: function getProjectsInCity(cityName) {
-	            cityName = cityName || $api.getStorage('curCity') || $api.getStorage('cityNameList')[0];
-	            $api.setStorage('curCity', cityName);
-	            var curProjectLevel = $api.getStorage('curProjectLevel') || '特级';
-
-	            $api.setStorage('curProjectLevel', curProjectLevel);
-	            return new Promise(function (resolve) {
-	                var targetCity = Project.cacheCity;
-	                targetCity.lines.forEach(function (line) {
-	                    line.projects = line.projects.filter(function (project) {
-	                        return project.prjLevel === curProjectLevel;
-	                    });
-	                });
-	                resolve(targetCity);
-	            });
-	        }
-
-	        /** 获取项目 */
-
-	    }, {
-	        key: 'getProjectsByType',
-	        value: function getProjectsByType(typeCode) {
-	            typeCode = typeCode || $api.getStorage('curProjectType') || $api.getStorage('projectTypeList')[0].typeCode;
-	            $api.setStorage('curProjectType', typeCode);
-
-	            return new Promise(function (resolve) {
-	                var cachedCityList = $api.getStorage(typeCode);
-	                // let cachedCityList = Project.cache[typeCode];
-	                if (!cachedCityList) {
-	                    //不在缓存中
-	                    var url = 'https://yuntu.ce-safe.com/api/projects?type=' + typeCode;
-	                    $api.get(url, function (cityList) {
-	                        var cityNameList = cityList.map(function (item) {
-	                            return item.name;
-	                        });
-	                        $api.setStorage('cityNameList', cityNameList); //储存当前的城市列表
-	                        $api.setStorage(typeCode, cityList);
-	                        // Project.cache[typeCode] = cityList;
-	                        Project.curCityList = cityList;
-	                        resolve(cityList);
-	                    });
-	                } else {
-	                    var cityNameList = cachedCityList.map(function (item) {
-	                        return item.name;
-	                    });
-	                    $api.setStorage('cityNameList', cityNameList); //储存当前的城市列表
-	                    resolve(cachedCityList);
-	                }
-	            });
-	        }
-
-	        /** 获取项目的类型 */
-
-	    }, {
-	        key: 'getProjectTypes',
-	        value: function getProjectTypes() {
-	            var url = 'https://yuntu.ce-safe.com/metro/project/authorizedProjectTypes';
-	            return new Promise(function (resolve) {
-	                $api.get(url, function (typeList) {
-	                    $api.setStorage('projectTypeList', typeList);
-	                    resolve(typeList);
-	                });
-	            });
-	        }
-
-	        /** 当前线路 */
-
-	    }, {
-	        key: 'getCurLine',
-	        value: function getCurLine() {
-	            return $api.getStorage('curLine');
-	        }
-
-	        /** 查找线路 */
-
-	    }, {
-	        key: 'getLine',
-	        value: function getLine(lineName) {
-	            return new Promise(function (resolve) {
-	                if (!lineName) {
-	                    resolve(Project.getCurLine());
-	                } else {
-	                    Project.getProjectsInCity().then(function (targetCity) {
-	                        var targetLine = targetCity.lines.find(function (line) {
-	                            return line.name === lineName;
-	                        });
-	                        resolve(targetLine);
-	                    });
-	                }
-	            });
-	        }
-
-	        /** 根据项目的id寻找项目 */
-
-	    }, {
-	        key: 'findProjectById',
-	        value: function findProjectById(prjId) {
-	            if (!prjId) return $api.getStorage('curProject'); //如果不提供prjId就找当前的project
-	            var targetCity = Project.cacheCity;
-	            var temp = null;
-	            targetCity.lines.some(function (line) {
-	                return line.projects.some(function (prj) {
-	                    if (prj.prjId === prjId) {
-	                        temp = prj;
-	                        return true;
-	                    }
-	                    return false;
-	                });
-	            });
-	            return temp;
-	        }
-	    }, {
-	        key: 'cacheCity',
-
-
-	        /** 当前缓存的城市 */
-	        get: function get() {
-	            var cityName = $api.getStorage('curCity') || $api.getStorage('cityNameList')[0];
-	            var typeCode = $api.getStorage('curProjectType');
-	            var cachedCityList = $api.getStorage(typeCode);
-	            var targetCity = cachedCityList.find(function (item) {
-	                return item.name === cityName;
-	            });
-	            return targetCity;
-	        }
-	    }]);
-
-	    return Project;
-	}();
-
-	exports.default = Project;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(299)))
 
 /***/ })
 /******/ ]);

@@ -88,20 +88,25 @@
                     duration: 300
                 }
             });
-            
+
         }
 
         function chooseProjectTtype() {
-            api.openWin({
-                name: 'projectTypeSelector_win',
-                url: 'widget://html/map/projectTypeSelector_win.html',
-                bounces: false,
-                animation: {
-                    type: 'movein',
-                    subType: "from_right", //动画子类型（详见动画子类型常量）
-                    duration: 300
-                }
+            api.toast({
+                msg: '暂未实现,先点击左下角的试试',
+                duration: 2000,
+                location: 'bottom'
             });
+            // api.openWin({
+            //     name: 'projectTypeSelector_win',
+            //     url: 'widget://html/map/projectTypeSelector_win.html',
+            //     bounces: false,
+            //     animation: {
+            //         type: 'movein',
+            //         subType: "from_right", //动画子类型（详见动画子类型常量）
+            //         duration: 300
+            //     }
+            // });
         }
     </script>
 </body>

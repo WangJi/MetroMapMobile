@@ -1,14 +1,25 @@
+import projectTypeSelector from './../components/service/projectTypeSelector';
 import loadPublicMap from './../components/service/loadPublicMap';
 import Project from './../components/Model/Project';
 
+
+
+let tempTypeCode = '';
 Project.getProjectTypes()
     .then(function() {
         return changeProjectType();
+    })
+    .then(() => {
+        tempTypeCode = $api.getStorage('curProjectType'); //保存一下类型
+        return Project.initAllProjectsCache();
+    })
+    .then(() => {
+        $api.setStorage('curProjectType', tempTypeCode); //还原回去
     });
 
 /** 改变了项目的类型之后 */
 function changeProjectType(typeCode) {
-    Project.getProjectsByType(typeCode)
+    return Project.getProjectsByType(typeCode)
         .then(function() {
             return Project.getProjectsInCity($api.getStorage('cityNameList')[0]); //获取第一个城市的线路和项目
         })
@@ -20,6 +31,26 @@ function changeProjectType(typeCode) {
         });
 }
 
+function changeProjectTypeAndCity(typeCode, cityName) {
+    return Project.getProjectsByType(typeCode)
+        .then(function() {
+            return Project.getProjectsInCity(cityName);
+        })
+        .then(function(city) {
+            return loadPublicMap.init(city.name) //初始化地图
+                .then(function() {
+                    loadPublicMap.loadProjects(city);
+                });
+        });
+}
+
+api.addEventListener({
+    name: 'projectTypeAndCityChanged'
+}, function(ret, err) {
+    let data = ret.value;
+    changeProjectTypeAndCity(data.typeCode, data.cityName);
+
+});
 
 //当用户请求项目类型更改
 api.addEventListener({
@@ -34,13 +65,9 @@ api.addEventListener({
 
 //用户请求城市改变
 api.addEventListener({
-    name: 'changeCity'
+    name: 'locationToolClicked'
 }, function(ret, err) {
-    let city = ret.value;
-    Project.getProjectsInCity(city)
-        .then(function(city) {
-            loadPublicMap.loadProjects(city);
-        });
+    projectTypeSelector.openSelector();
 });
 
 //用户请求项目等级改变
